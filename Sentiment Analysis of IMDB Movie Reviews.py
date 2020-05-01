@@ -11,12 +11,16 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+
 imdb_data = pd.read_csv('dataset/IMDB Dataset.csv')
-imdb_data.shape
-imdb_data.head(10)
+#print(imdb_data.shape)
+#print(imdb_data.head(10))
 
 # Summary of the dataset
-imdb_data.describe()
+#print(imdb_data.describe())
 
 # sentiment count
 imdb_data['sentiment'].value_counts()
@@ -35,6 +39,7 @@ test_sentiments = imdb_data.sentiment[40000:]
 
 # Tokenization of text
 tokenizer = ToktokTokenizer()
+
 
 # Removing the html strips
 def strip_html(text):
@@ -75,12 +80,14 @@ def simple_stemmer(text):
     text = ' '.join([ps.stem(word) for word in text.split()])
     return text
 
+
 # Apply function on review column
 imdb_data['review'] = imdb_data['review'].apply(simple_stemmer)
 imdb_data.head(10)
 
 # set stopwords to english
 stop_words = set(stopwords.words('english'))
+
 
 # removing the stopwords
 def remove_stopwords(text, is_lower_case=False):
@@ -99,7 +106,8 @@ imdb_data['review'] = imdb_data['review'].apply(remove_stopwords)
 
 # normalized train reviews
 norm_train_reviews = imdb_data.review[:40000]
-norm_train_reviews[0]
+print(norm_train_reviews)
+# print(norm_train_reviews[0])
 # convert dataframe to string
 # norm_train_string=norm_train_reviews.to_string()
 # Spelling correction using Textblob
@@ -111,7 +119,8 @@ norm_train_reviews[0]
 
 # Normalized test reviews
 norm_test_reviews = imdb_data.review[40000:]
-norm_test_reviews[45005]
+norm_test_reviews
+# print(norm_test_reviews[45005])
 ##convert dataframe to string
 # norm_test_string=norm_test_reviews.to_string()
 # spelling correction using Textblob
@@ -126,7 +135,7 @@ Bags of words model
 It is used to convert text documents to numerical vectors or bag of words.
 '''
 
-# Count vectorizer for bag of words
+# Count Vectorizer for bag of words
 cv = CountVectorizer()
 # transformed train reviews
 cv_train_reviews = cv.fit_transform(norm_train_reviews)
@@ -158,23 +167,22 @@ print(sentiment_data.shape)
 # Spliting the sentiment data
 train_sentiments = sentiment_data[:40000]
 test_sentiments = sentiment_data[40000:]
-print(train_sentiments)
-print(test_sentiments)
-
-
+print('----------------------------')
 '''
 Modelling the dataset
 Let us build logistic regression model for both bag of words and tfidf features.
 '''
 # training the model
-lr = LogisticRegression()
+lr = LogisticRegression(solver='lbfgs')
+
 # Fitting the model for Bag of words
 lr_bow = lr.fit(cv_train_reviews, train_sentiments)
 print(lr_bow)
+print('----------------------------')
 # Fitting the model for tfidf features
 lr_tfidf = lr.fit(tv_train_reviews, train_sentiments)
 print(lr_tfidf)
-
+print('----------------------------')
 '''
 Logistic regression model performane on test dataset.
 '''
@@ -196,13 +204,12 @@ print("lr_bow_score :", lr_bow_score)
 lr_tfidf_score = accuracy_score(test_sentiments, lr_tfidf_predict)
 print("lr_tfidf_score :", lr_tfidf_score)
 
-
-#Classification report for bag of words
-lr_bow_report=classification_report(test_sentiments,lr_bow_predict,target_names=['Positive','Negative'])
+# Classification report for bag of words
+lr_bow_report = classification_report(test_sentiments, lr_bow_predict, target_names=['Positive', 'Negative'])
 print(lr_bow_report)
 
-#Classification report for tfidf features
-lr_tfidf_report=classification_report(test_sentiments,lr_tfidf_predict,target_names=['Positive','Negative'])
+# Classification report for tfidf features
+lr_tfidf_report = classification_report(test_sentiments, lr_tfidf_predict, target_names=['Positive', 'Negative'])
 print(lr_tfidf_report)
 
 # confusion matrix for bag of words
@@ -211,3 +218,8 @@ print(cm_bow)
 # confusion matrix for tfidf features
 cm_tfidf = confusion_matrix(test_sentiments, lr_tfidf_predict, labels=[1, 0])
 print(cm_tfidf)
+
+'''
+create list of algo and add logic to processing
+understand confusion_matrix and try to replace with accuracy 
+'''
